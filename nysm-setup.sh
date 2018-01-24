@@ -39,10 +39,18 @@ create_socat_instance() {
     inbound_port=$1
   fi
 
+  # If argument 2 is set, then we are doing the initial socats. These are for
+  #  localhost listening only.
+  if [ -z "$2" ]; then
+    RANGE="0.0.0.0/32"
+  else
+    RANGE="127.0.0.1/32"
+  fi
+
   read -r -p "What IP/hostname should socat forward $2data to? " outbound_host
   read -r -p "What port should socat forward $2data to? " outbound_port
 
-  socat -d -d -lf /var/log/socat.log TCP-LISTEN:$inbound_port,fork TCP-CONNECT:$outbound_host:$outbound_port &
+  socat -d -d -lf /var/log/socat.log TCP-LISTEN:$inbound_port,fork,range=$RANGE TCP-CONNECT:$outbound_host:$outbound_port &
 
   ps aux | grep socat | grep $inbound_port
   netstat -tlpn | grep socat | grep $inbound_port
@@ -116,7 +124,7 @@ nysm_setup() {
 
 nysm_status() {
   printf "\n************************ Processes ************************\n"
-  ps aux | grep (socat|nginx) | grep -v grep
+  ps aux | grep -E '(socat|nginx)' | grep -v grep
 
   printf "\n************************* Network *************************\n"
   netstat -tulpn | grep -E '(socat|nginx)'

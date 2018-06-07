@@ -5,6 +5,7 @@ Pass-thru web server for traffic redirection
 
 ```bash
 brownee $ git clone https://github.com/audrummer15/now-you-see-me.git
+brownee $ cd now-you-see-me
 brownee $ chmod +x nysm-setup.sh
 brownee $ sudo ./nysm-setup.sh
 

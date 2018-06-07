@@ -58,8 +58,14 @@ nysm_install() {
   apt-get install -y inetutils-ping net-tools screen dnsutils curl
   check_errors
 
-  nysm_action "Installing nginx, certbot..."
-  apt-get install -y nginx python-certbot-nginx
+  nysm_action "Installing nginx git..."
+  apt-get install -y nginx git
+
+  nysm_action "Installing certbot..."
+  git clone https://github.com/certbot/certbot.git /opt/letsencrypt > /dev/null 2>&1\
+
+  nysm_action "Adding cronjob..."
+  cp nysm-cron /etc/cron.d/nysm
   check_errors
 
   nysm_action "Finished installing dependencies!"
@@ -78,7 +84,8 @@ nysm_initialize() {
 
   SSL_SRC="/etc/letsencrypt/live/$domain_name"
   nysm_action "Obtaining Certificates..."
-  certbot certonly -a webroot --webroot-path=/var/www/html -d $domain_name
+  read -r -p "Provide an E-mail address for emergency Let's Encrypt communication: " email_address
+  /opt/letsencrypt/certbot-auto certonly --non-interactive --agree-tos --email $email_address -a webroot --webroot-path=/var/www/html -d $domain_name
   check_errors
 
   nysm_action "Installing Certificates..."

@@ -73,11 +73,19 @@ nysm_install() {
 
 nysm_initialize() {
   nysm_action "Modifying nginx configs..."
+  if [ "$#" -ne 2 ]; then
+    read -r -p "What is the sites domain name? (ex: google.com) " domain_name
+    read -r -p "What is the C2 server address? (IP:Port) " c2_server
+  else
+    domain_name = $1
+    c2_server = $2
+  fi
+
   cp ./default.conf $CONF_DST
-  read -r -p "What is the sites domain name? (ex: google.com) " domain_name
+
   sed -i.bak "s/<DOMAIN_NAME>/$domain_name/" $CONF_DST
   rm $CONF_DST.bak
-  read -r -p "What is the C2 server address? (IP:Port) " c2_server
+
   sed -i.bak "s/<C2_SERVER>/$c2_server/" $CONF_DST
   rm $CONF_DST.bak
   check_errors
@@ -85,7 +93,7 @@ nysm_initialize() {
   SSL_SRC="/etc/letsencrypt/live/$domain_name"
   nysm_action "Obtaining Certificates..."
   read -r -p "Provide an E-mail address for emergency Let's Encrypt communication: " email_address
-  /opt/letsencrypt/certbot-auto certonly --non-interactive --agree-tos --email $email_address -a webroot --webroot-path=/var/www/html -d $domain_name
+  /opt/letsencrypt/certbot-auto certonly --non-interactive --quiet --register-unsafely-without-email --agree-tos --email $email_address -a webroot --webroot-path=/var/www/html -d $domain_name
   check_errors
 
   nysm_action "Installing Certificates..."
@@ -102,7 +110,7 @@ nysm_initialize() {
 
 nysm_setup() {
   nysm_install
-  nysm_initialize
+  nysm_initialize $1 $2
 }
 
 nysm_status() {
@@ -113,29 +121,33 @@ nysm_status() {
   netstat -tulpn | grep -E 'nginx'
 }
 
-PS3="
-NYSM - Select an Option:  "
+if [ "$#" -ne 2 ]; then
+  PS3="
+  NYSM - Select an Option:  "
 
-finshed=0
-while (( !finished )); do
-  printf "\n"
-  options=("Setup Nginx Redirector" "Check Status" "Quit")
-  select opt in "${options[@]}"
-  do
-    case $opt in
-      "Setup Nginx Redirector")
-        nysm_setup
-        break;
-        ;;
-      "Check Status")
-        nysm_status
-        break;
-        ;;
-      "Quit")
-        finished=1
-        break;
-        ;;
-      *) nysm_warning "invalid option" ;;
-    esac
+  finshed=0
+  while (( !finished )); do
+    printf "\n"
+    options=("Setup Nginx Redirector" "Check Status" "Quit")
+    select opt in "${options[@]}"
+    do
+      case $opt in
+        "Setup Nginx Redirector")
+          nysm_setup
+          break;
+          ;;
+        "Check Status")
+          nysm_status
+          break;
+          ;;
+        "Quit")
+          finished=1
+          break;
+          ;;
+        *) nysm_warning "invalid option" ;;
+      esac
+    done
   done
-done
+else
+  nysm_setup $1 $2
+fi

@@ -92,8 +92,7 @@ nysm_initialize() {
 
   SSL_SRC="/etc/letsencrypt/live/$domain_name"
   nysm_action "Obtaining Certificates..."
-  read -r -p "Provide an E-mail address for emergency Let's Encrypt communication: " email_address
-  /opt/letsencrypt/certbot-auto certonly --non-interactive --quiet --register-unsafely-without-email --agree-tos --email $email_address -a webroot --webroot-path=/var/www/html -d $domain_name
+  /opt/letsencrypt/certbot-auto certonly --non-interactive --quiet --register-unsafely-without-email --agree-tos -a webroot --webroot-path=/var/www/html -d $domain_name
   check_errors
 
   nysm_action "Installing Certificates..."

@@ -77,8 +77,8 @@ nysm_initialize() {
     read -r -p "What is the sites domain name? (ex: google.com) " domain_name
     read -r -p "What is the C2 server address? (IP:Port) " c2_server
   else
-    domain_name = $1
-    c2_server = $2
+    domain_name=$1
+    c2_server=$2
   fi
 
   cp ./default.conf $CONF_DST

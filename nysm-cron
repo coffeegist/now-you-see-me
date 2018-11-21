@@ -7,4 +7,4 @@
 # is within 30 days.
 #!/bin/sh
 
-0 0,12 * * * python -c 'import random; import time; time.sleep(random.random() * 3600)' && /opt/letsencrypt/certbot-auto renew
+0 0,12 * * * root python -c 'import random; import time; time.sleep(random.random() * 3600)' && /opt/letsencrypt/certbot-auto renew
